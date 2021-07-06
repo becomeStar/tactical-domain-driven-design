@@ -90,5 +90,46 @@
         aggregate를 저장할때 optimistic lock을 사용한다
       - 낙관적 락(optimistic lock) 은 비관적 락(pessimistic lock) 보다 구현하기가 더 쉽다     
    
-
+ - Domain Events
+      - 도메인 이벤트는 도메인 모델의 상태를 변경하기 위해 사용된다
+         - 도메인의 전체(aggregate root) 또는 일부(aggregate root의 특정 속성)를 변경하는데 사용된다
+      - 전형적으로 아래와 같은 속성을 가진다
+         - immutable 
+         - 이벤트가 발생한 timestamp
+         - 다른 이벤트와 구별하는데 도움이 되는 고유 ID
+         - aggregate root나 domain service에 의해 publish 된다
+       
+      - domain event listener가 domain event를 받는다
+      - domain event listener는 event 를 publish 했던 트랜잭션과 별도로 실행하는 것이 좋다
+      - domain event 의 가장 큰 이점은 시스템을 확장가능하게 만든다는 점이다
+         - 기존에 존재하는 코드를 고치지 않고 새로운 비즈니스 로직을 trigger 할 수 있다
+    
+      - event sourcing 
+         - 시스템의 상태가 이벤트의 순서화된 로그로 저장되는 디자인 패턴
+         - 각각의 이벤트는 시스템의 상태를 변경하고 시시각각 계산되는 현재 상태가 이벤트 로그에 저장된다
+         - 현재 상태보다 히스토리가 더 중요할 때 사용된다
+         - domain event 가 event sourcing 패턴을 구현하는데 사용된다
+         - domain model 의 상태를 바꾸는 모든 연산은 domain event를 발행하며 이 이벤트가 로그로 남는다
+ 
+ - Distributing Domain Events
+      - domain event는 리스너에게 안정적으로 전달될 수 있을 때에만 사용할 수 있다
+      - event listener가 이벤트 수신에 실패해서 다시 보내야 할 경우 어떻게 해야 하는가?
+         - Distribution Through a Message Queue
+            - ![Distribution_through_message_queue](image/Distribution_through_message_queue.png)
+            - AMQP 또는 JMS 와 같은 Message Queue를 이용하는 방식(이벤트 pub-sub 구조)
+            - 빠르고 구현이 쉽고 메시징 솔루션에 의지할 수 있다 (장점)
+            - MQ 솔루션을 설치해야 하는 번거로움이 있고 subscriber 가 바뀔 경우, 과거 이벤트가 유실된다 (단점)
+             
+         - Distribution Through an Event Log
+            - ![Distribution_through_event_log](image/Distribution_through_event_log.png)
+            - 추가적인 component를 필요로 하지 않는 대신 약간의 코딩이 필요하다
+            - domain event 가 발행될떄, event log에 append된다
+            - domain event listener가 event log를 주기적으로 폴링한다
+            - 추가적인 component가 필요 없고, 새로운 listener가 들어와도 전체 히스토리가 보존된다(장점)
+            - 추가적인 구현을 필요로 하며 publish와 subscribe 사이에 지연이 발생할 수 있다(단점)
+ 
+ - A Note on Eventual Consistency
+      - domain event는 eventual consistency를 이루기 위한 좋은 방법 
+      - ![eventual_consistency](image/eventual_consistency.png)
+      - System A 가 발행한 event가 System B, System C, System D 까지 최종적으로 전파된다
 
