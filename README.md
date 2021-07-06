@@ -71,7 +71,24 @@
     - ID로 다른 aggregate 를 참조하기 
         - 다른 aggregate 를 직접 참조하지 말고, aggregate root ID 를 래핑하는 VO를 만들고,
           VO로 aggregate 를 참조해라
-                            
-    - 트랜잭션 당 하나의 aggregate 만 변경하기
-        - 여러개의 aggregate 에 걸쳐 있는 비즈니스 연산을 처리하기 위해서,
-          domain event 과 eventual consistency를 사용한다
+
+   - 여러개의 aggregate의 상태를 변경하기 위해서 domain event를 사용하기
+      - 여러개의 aggregate 에 걸쳐 있는 비즈니스 연산을 처리하기 위해서,
+        domain event 과 eventual consistency를 사용한다
+
+      - 여러 aggregate 의 transaction 을 분리하는 경우
+        -![domain_event_1](image/domain_event_1.png)
+
+      - 여러 aggregate의 transaction을 하나로 합치는 경우      
+        --![domain_event_2](image/domain_event_2.png)
+
+      - 하나의 aggregate에서 다른 aggregate의 상태를 직접 변경하지 않도록 한다
+
+   - 낙관적 락(optimistic locking) 을 사용하기
+      - aggregate의 중요한 특징은 비즈니스 일관성, 데이터 일관성을 유지하는 것이다
+      - aggregate를 저장할 때, 두개의 저장 연산이 서로 충돌하면 aggregate가 깨질 수 있기 떄문에
+        aggregate를 저장할때 optimistic lock을 사용한다
+      - 낙관적 락(optimistic lock) 은 비관적 락(pessimistic lock) 보다 구현하기가 더 쉽다     
+   
+
+
